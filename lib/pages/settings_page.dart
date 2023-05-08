@@ -11,10 +11,12 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool isDark = true;
+  bool isColor = true;
 
   @override
   void initState() {
     getMod();
+    getColor();
     super.initState();
   }
 
@@ -28,6 +30,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void setMod() async {
     await PrefsService.storeMode(isDark);
+  }
+
+  void getColor() async {
+    await PrefsService.loadColor().then((value) {
+      print(value);
+      setState(() {
+        isColor = value!;
+      });
+    });
+  }
+
+  void setColor() async {
+    await PrefsService.storeColor(isColor);
   }
 
   @override
@@ -65,7 +80,24 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
-            Divider(color: Colors.grey,)
+            Divider(color: Colors.grey,),
+            Container(
+              child: Row(
+                children: [
+                  Switch(
+                    value: isColor,
+                    onChanged: (value) {
+                      setState(() {
+                        isColor = value;
+                      });
+                      setColor();
+                    },
+                  ),
+                  SizedBox(width: 20,),
+                  Text("Discoloration of car speedometer",style: TextStyle(color: isDark?Colors.white:Colors.black),),
+                ],
+              ),
+            ),
           ],
         ),
       ),

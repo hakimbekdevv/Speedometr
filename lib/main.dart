@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:speedometr/pages/home_page.dart';
+import 'package:speedometr/pages/test.dart';
 
 
 void main() {
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      home: HomePage(primaryColor: true),
+      home: HomePage(),
     );
   }
 }
