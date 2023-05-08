@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
@@ -181,7 +182,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context) {
         return Container(
           padding: EdgeInsets.all(20),
-          child: Text("Hello dear user. You must enable LOCATION to use my app. Only then you can measure the speed. Otherwise you can't measure",style: TextStyle(color: isDark?Colors.white:Colors.black,fontWeight: FontWeight.bold),),
+          child: Text("moreText".tr(),style: TextStyle(color: isDark?Colors.white:Colors.black,fontWeight: FontWeight.bold),),
         );
       },
     );
