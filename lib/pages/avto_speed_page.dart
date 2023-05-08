@@ -104,6 +104,17 @@ class _AvtoSpeedPageState extends State<AvtoSpeedPage> {
     );
   }
 
+
+  void basic() {
+    locationSubscription = myService.getLocationUpdates().listen((event) {
+      setState(() {
+        locationData = event;
+        speed = (locationData!.speed!*36)/10;
+      });
+    });
+  }
+
+
   void getMod() async {
     await PrefsService.loadMode().then((value) {
       setState(() {
@@ -120,12 +131,5 @@ class _AvtoSpeedPageState extends State<AvtoSpeedPage> {
     });
   }
 
-  void basic() {
-    locationSubscription = myService.getLocationUpdates().listen((event) {
-      locationData = event;
-      setState(() {
-        speed = (locationData!.speed!*36)/10;
-      });
-    });
-  }
+
 }

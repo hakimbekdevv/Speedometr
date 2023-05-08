@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,12 +25,13 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<LocationData>? locationSubscription;
   LocationData? locationData;
   LocationService myService = LocationService();
-
+  String currentLanguage = "uzb";
 
   @override
   void initState() {
     getMod();
     initLocation();
+    // getLanguage(context);
     basic();
     super.initState();
   }
@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
                 await Navigator.push(context, CupertinoPageRoute(
                   builder: (context) => const SettingsPage(),));
                 getMod();
+                getLanguage(context);
               },
               color: isDark ? Colors.white : Colors.black,
               icon: const Icon(Icons.settings,),
@@ -92,18 +93,18 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
-                                children: [
-                                  const Text("Please.Turn on location.",
+                                children: const [
+                                  Text("Please.Turn on location.",
                                     style: TextStyle(
                                         fontSize: 17, color: Colors.white),),
                                   SizedBox(width: 15,),
-                                  const Icon(
+                                  Icon(
                                     Icons.warning, color: Colors.yellow,),
                                 ],
                               ),
                               TextButton(
                                 onPressed: () => bottomSheet(context),
-                                child: Text("more", style: TextStyle(
+                                child: const Text("more", style: TextStyle(
                                     color: Colors.white),),
                               )
                             ],
@@ -173,15 +174,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void bottomSheet(context) {
+
     showModalBottomSheet(
       context: context,
       elevation: 5,
       backgroundColor: isDark?Colors.grey.shade900:Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20), topRight: Radius.circular(20))),
       builder: (context) {
         return Container(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Text("moreText".tr(),style: TextStyle(color: isDark?Colors.white:Colors.black,fontWeight: FontWeight.bold),),
         );
       },
@@ -196,6 +198,33 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void getLanguage(context) async {
+
+    await PrefsService.loadLanguage().then((value) async {
+      setState(() {
+        currentLanguage = value!;
+      });
+    });
+
+    switch(currentLanguage) {
+      case "uzb": {
+        await context.setLocale(const Locale("uz","UZ"));
+      }
+      break;
+
+      case "rus": {
+        await context.setLocale(const Locale("ru","RU"));
+      }
+      break;
+
+      case "usa": {
+        await context.setLocale(const Locale("en","US"));
+      }
+      break;
+    }
+
+  }
+
   Future<void> initLocation() async {
     final futurePermission = Location().requestPermission();
     final isLocationEnabled = await Location().serviceEnabled();
@@ -205,8 +234,8 @@ class _HomePageState extends State<HomePage> {
         context: context,
         builder: (_) =>
             AlertDialog(
-              title: const Text('Location Service'),
-              content: const Text('Please turn on the location service.'),
+              title:  const Text('Location Service'),
+              content:  const Text('Please turn on the location service.'),
               actions: [
                 TextButton(
                   child: const Text('OK'),
@@ -215,7 +244,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
       );
-      return;
     }
 
     await futurePermission;
