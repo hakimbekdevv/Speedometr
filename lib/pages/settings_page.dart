@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:speedometr/service/prefs_service.dart';
@@ -91,12 +92,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     },
                   ),
                   SizedBox(width: 20,),
-                  Text("Dark Mode",style: TextStyle(color: isDark?Colors.white:Colors.black),),
+                  Text("darkMode".tr(),style: TextStyle(color: isDark?Colors.white:Colors.black),),
                 ],
               ),
             ),
             Divider(color: Colors.grey,),
             Container(
+              height: 30,
               child: Row(
                 children: [
                   Switch(
@@ -109,7 +111,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     },
                   ),
                   SizedBox(width: 20,),
-                  Text("Discoloration of car speedometer",style: TextStyle(color: isDark?Colors.white:Colors.black),),
+                  Container(
+                    height: 30,
+                    width: MediaQuery.of(context).size.width-120,
+                    child: Text("speedometrColor".tr(),style: TextStyle(color: isDark?Colors.white:Colors.black,overflow: TextOverflow.ellipsis,),maxLines: 2,),
+                  )
                 ],
               ),
             ),
@@ -145,11 +151,28 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void getLanguage() async {
-    await PrefsService.loadLanguage().then((value) {
+    await PrefsService.loadLanguage().then((value) async {
       setState(() {
         currentLanguage = value!;
       });
     });
+    switch(currentLanguage) {
+      case "uzb": {
+        await context.setLocale(const Locale("uz","UZ"));
+      }
+      break;
+
+      case "rus": {
+        await context.setLocale(const Locale("ru","RU"));
+      }
+      break;
+
+      case "usa": {
+        await context.setLocale(const Locale("en","US"));
+      }
+      break;
+    }
+
   }
 
   Future<void> setLanguage(String key) async {

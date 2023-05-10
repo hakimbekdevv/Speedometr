@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,13 +27,16 @@ class _HomePageState extends State<HomePage> {
   LocationData? locationData;
   LocationService myService = LocationService();
   String currentLanguage = "uzb";
+  bool? isConnected;
 
   @override
   void initState() {
     getMod();
+    basic();
+    checkConnectivity();
     initLocation();
     // getLanguage(context);
-    basic();
+
     super.initState();
   }
 
@@ -41,8 +45,6 @@ class _HomePageState extends State<HomePage> {
     locationSubscription!.cancel();
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +62,9 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               onPressed: () async {
-                await Navigator.push(context, CupertinoPageRoute(
-                  builder: (context) => const SettingsPage(),));
+                await Navigator.push(context, CupertinoPageRoute(builder: (context) => const SettingsPage(),));
                 getMod();
-                getLanguage(context);
+                getLanguage();
               },
               color: isDark ? Colors.white : Colors.black,
               icon: const Icon(Icons.settings,),
@@ -77,11 +78,11 @@ class _HomePageState extends State<HomePage> {
           color: isDark ? Colors.black : Colors.white,
           child: Column(
             children: [
-              locationData == null ?
+              locationData == null || isConnected==false ?
               Column(
                 children: [
                   Container(
-                      height: 30,
+                      height: 35,
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
@@ -93,18 +94,19 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
-                                children: const [
-                                  Text("Please.Turn on location.",
-                                    style: TextStyle(
-                                        fontSize: 17, color: Colors.white),),
-                                  SizedBox(width: 15,),
-                                  Icon(
+                                children:  [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width-150,
+                                    child: Text("warning".tr(),style: const TextStyle(fontSize: 14, color: Colors.white,overflow: TextOverflow.ellipsis),)
+                                  ),
+                                  const SizedBox(width: 15,),
+                                  const Icon(
                                     Icons.warning, color: Colors.yellow,),
                                 ],
                               ),
                               TextButton(
                                 onPressed: () => bottomSheet(context),
-                                child: const Text("more", style: TextStyle(
+                                child: Text("buttonMore".tr(), style: TextStyle(
                                     color: Colors.white),),
                               )
                             ],
@@ -198,14 +200,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void getLanguage(context) async {
-
+  void getLanguage() async {
     await PrefsService.loadLanguage().then((value) async {
       setState(() {
         currentLanguage = value!;
       });
     });
-
     switch(currentLanguage) {
       case "uzb": {
         await context.setLocale(const Locale("uz","UZ"));
@@ -247,5 +247,29 @@ class _HomePageState extends State<HomePage> {
     }
 
     await futurePermission;
+
+    if (!isConnected!){
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Internet Connection'),
+          content: const Text('Please connect to the internet and try again.'),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> checkConnectivity() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    setState(() {
+      isConnected =
+      connectivityResult != ConnectivityResult.none ? true : false;
+    });
   }
 }
