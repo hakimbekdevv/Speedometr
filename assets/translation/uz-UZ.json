@@ -3,5 +3,9 @@
   "warning": "To'liq bilish uchun bosing",
   "buttonMore": "ko'proq",
   "darkMode": "Qorong'i rejim",
-  "speedometrColor": "Avtomobil spidometrining rangsizlanishi"
+  "speedometrColor": "Avtomobil spidometrining rangsizlanishi",
+  "initLocation": "Joylashuv xizmatini yoqing.",
+  "initLocationTitle": "Joylashuv xizmati",
+  "checkConnectivity": "Internetga ulaning va qaytadan urining.",
+  "checkConnectivityTitle": "Internetga ulanish."
 }

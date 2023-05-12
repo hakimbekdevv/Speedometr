@@ -33,10 +33,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     getMod();
     basic();
+    getLanguage();
     checkConnectivity();
     initLocation();
-    // getLanguage(context);
-
     super.initState();
   }
 
@@ -106,8 +105,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               TextButton(
                                 onPressed: () => bottomSheet(context),
-                                child: Text("buttonMore".tr(), style: TextStyle(
-                                    color: Colors.white),),
+                                child: Text("buttonMore".tr(), style: const TextStyle(color: Colors.white),),
                               )
                             ],
                           )
@@ -126,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   children: [
                     buttons("assets/images/auto.png", const AvtoSpeedPage()),
-                    // buttons("assets/images/velo.png",const VeloSpeedPage()),
+
                     buttons("assets/images/walk.png", const WalkingSpeedPage()),
                     buttons("assets/images/mirror.png", const MirrorModePage()),
                   ],
@@ -232,17 +230,27 @@ class _HomePageState extends State<HomePage> {
     if (!isLocationEnabled) {
       showDialog(
         context: context,
-        builder: (_) =>
-            AlertDialog(
-              title:  const Text('Location Service'),
-              content:  const Text('Please turn on the location service.'),
+        builder: (_) => true?
+        AlertDialog(
+              title:  Text('initLocationTitle'.tr()),
+              content:  Text('initLocation'.tr()),
               actions: [
                 TextButton(
                   child: const Text('OK'),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
-            ),
+            ):
+        CupertinoAlertDialog(
+              title:  const Text('Location Service'),
+              content:  Text('initLocation'.tr()),
+              actions: [
+                TextButton(
+                  child: const Text('OK'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+        ),
       );
     }
 
@@ -251,9 +259,20 @@ class _HomePageState extends State<HomePage> {
     if (!isConnected!){
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (_) =>true?
+        AlertDialog(
+          title: Text('checkConnectivityTitle'.tr()),
+          content: Text('checkConnectivity'.tr()),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ):
+        CupertinoAlertDialog(
           title: const Text('Internet Connection'),
-          content: const Text('Please connect to the internet and try again.'),
+          content: Text('checkConnectivity'.tr()),
           actions: [
             TextButton(
               child: const Text('OK'),
