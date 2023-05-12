@@ -124,7 +124,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   children: [
                     buttons("assets/images/auto.png", const AvtoSpeedPage()),
-
                     buttons("assets/images/walk.png", const WalkingSpeedPage()),
                     buttons("assets/images/mirror.png", const MirrorModePage()),
                   ],
