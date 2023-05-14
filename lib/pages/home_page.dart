@@ -10,8 +10,7 @@ import 'package:speedometr/pages/settings_page.dart';
 import 'package:speedometr/pages/walking_speed_page.dart';
 import 'package:speedometr/service/location_service.dart';
 import 'package:speedometr/service/prefs_service.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -29,8 +28,8 @@ class _HomePageState extends State<HomePage> {
   LocationService myService = LocationService();
   String currentLanguage = "uzb";
   bool? isConnected;
-
-  final Location _location = Location();
+  Timer? timer;
+  final Location tekshiruv = Location();
 
   @override
   void initState() {
@@ -39,44 +38,13 @@ class _HomePageState extends State<HomePage> {
     getLanguage();
     checkConnectivity();
     initLocation();
-
-    Timer.periodic(Duration(seconds: 1), (timer) async {
-      bool a = await _location.serviceEnabled();
-
-      if (!a) {
-        await showDialog(
-        context: context,
-        builder: (_) => true
-            ? AlertDialog(
-                title: Text('initLocationTitle'.tr()),
-                content: Text('initLocation'.tr()),
-                actions: [
-                  TextButton(
-                    child: const Text('OK'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              )
-            : CupertinoAlertDialog(
-                title: const Text('Location Service'),
-                content: Text('initLocation'.tr()),
-                actions: [
-                  TextButton(
-                    child: const Text('OK'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-        );
-      }
-
-    });
-
+    constantCheck();
     super.initState();
   }
 
   @override
   void dispose() {
+    timer!.cancel();
     locationSubscription!.cancel();
     super.dispose();
   }
@@ -99,13 +67,12 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               onPressed: () async {
-                await Navigator.push(
-                    context,
-                    CupertinoPageRoute(
+                await Navigator.push(context,CupertinoPageRoute(
                       builder: (context) => const SettingsPage(),
                     ));
                 getMod();
                 getLanguage();
+                constantCheck();
               },
               color: isDark ? Colors.white : Colors.black,
               icon: const Icon(
@@ -121,8 +88,8 @@ class _HomePageState extends State<HomePage> {
           color: isDark ? Colors.black : Colors.white,
           child: Column(
             children: [
-              locationData == null || isConnected == false
-                  ? Column(
+              locationData == null || isConnected == false?
+              Column(
                       children: [
                         Container(
                             height: 35,
@@ -170,8 +137,8 @@ class _HomePageState extends State<HomePage> {
                           height: 20,
                         )
                       ],
-                    )
-                  : const SizedBox.shrink(),
+                    ) :
+              const SizedBox.shrink(),
               Expanded(
                 child: GridView(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -187,25 +154,30 @@ class _HomePageState extends State<HomePage> {
               )
             ],
           ),
-        ));
+        )
+    );
   }
 
   void getMod() async {
+    print("getMode ishga tushdi");
+
     await PrefsService.loadMode().then((value) {
       setState(() {
-        isDark = value!;
+        if (value != null) {
+          isDark = value;
+        }
       });
     });
   }
 
   Widget buttons(String image, pageName) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
+      onTap: () async {
+        timer!.cancel();
+        await Navigator.push(context,MaterialPageRoute(
               builder: (context) => pageName,
             ));
+        constantCheck();
       },
       child: Container(
         padding: const EdgeInsets.all(25),
@@ -254,7 +226,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void basic() {
-    Location _location = Location();
+    print("basic ishga tushdi");
+
     myService.getLocationUpdates().listen((event) {
       setState(() {
         locationData = event;
@@ -263,11 +236,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   void getLanguage() async {
+    print("getLanguage ishga tushdi");
     await PrefsService.loadLanguage().then((value) async {
       setState(() {
-        currentLanguage = value!;
+        if (value != null) {
+          currentLanguage = value;
+        }
       });
     });
+
     switch (currentLanguage) {
       case "uzb":
         {
@@ -290,6 +267,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> initLocation() async {
+    print("initLocation ishga tushdi");
+
     final futurePermission = Location().requestPermission();
     final isLocationEnabled = await Location().serviceEnabled();
 
@@ -351,10 +330,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> checkConnectivity() async {
+    print("checkConnectivity ishga tushdi");
+
     final connectivityResult = await Connectivity().checkConnectivity();
     setState(() {
-      isConnected =
-          connectivityResult != ConnectivityResult.none ? true : false;
+      isConnected = connectivityResult != ConnectivityResult.none ? true : false;
+    });
+  }
+
+  void constantCheck() async {
+    print("constantCheck ishga tushdi");
+
+    timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      //chek inernet
+      final connectivityResult = await Connectivity().checkConnectivity();
+      setState(() {
+        isConnected = connectivityResult != ConnectivityResult.none ? true : false;
+      });
+
+      //chek location
+      bool a = await tekshiruv.serviceEnabled();
+      if (!a) {
+        setState(() {
+          locationData = null;
+        });
+      }
     });
   }
 }
