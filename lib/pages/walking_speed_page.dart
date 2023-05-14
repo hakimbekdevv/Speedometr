@@ -1,10 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:speedometr/service/prefs_service.dart';
 import 'dart:math' as math;
-
 import '../service/location_service.dart'; // import this
 
 
