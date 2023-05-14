@@ -10,24 +10,27 @@ import 'package:speedometr/pages/settings_page.dart';
 import 'package:speedometr/pages/walking_speed_page.dart';
 import 'package:speedometr/service/location_service.dart';
 import 'package:speedometr/service/prefs_service.dart';
-
-
+import 'package:geolocator/geolocator.dart';
+import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key,}) : super(key: key);
+  const HomePage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool isDark = true;
   StreamSubscription<LocationData>? locationSubscription;
   LocationData? locationData;
   LocationService myService = LocationService();
   String currentLanguage = "uzb";
   bool? isConnected;
+
+  final Location _location = Location();
 
   @override
   void initState() {
@@ -36,6 +39,39 @@ class _HomePageState extends State<HomePage> {
     getLanguage();
     checkConnectivity();
     initLocation();
+
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      bool a = await _location.serviceEnabled();
+
+      if (!a) {
+        await showDialog(
+        context: context,
+        builder: (_) => true
+            ? AlertDialog(
+                title: Text('initLocationTitle'.tr()),
+                content: Text('initLocation'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              )
+            : CupertinoAlertDialog(
+                title: const Text('Location Service'),
+                content: Text('initLocation'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+        );
+      }
+
+    });
+
     super.initState();
   }
 
@@ -51,8 +87,10 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: isDark ? Colors.black : Colors.white,
-          title: Text("Speedometr",
-            style: TextStyle(color: isDark ? Colors.white : Colors.black),),
+          title: Text(
+            "Speedometr",
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
           actions: [
             IconButton(
               onPressed: () {},
@@ -61,12 +99,18 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               onPressed: () async {
-                await Navigator.push(context, CupertinoPageRoute(builder: (context) => const SettingsPage(),));
+                await Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ));
                 getMod();
                 getLanguage();
               },
               color: isDark ? Colors.white : Colors.black,
-              icon: const Icon(Icons.settings,),
+              icon: const Icon(
+                Icons.settings,
+              ),
             )
           ],
         ),
@@ -77,51 +121,63 @@ class _HomePageState extends State<HomePage> {
           color: isDark ? Colors.black : Colors.white,
           child: Column(
             children: [
-              locationData == null || isConnected==false ?
-              Column(
-                children: [
-                  Container(
-                      height: 35,
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children:  [
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width-150,
-                                    child: Text("warning".tr(),style: const TextStyle(fontSize: 14, color: Colors.white,overflow: TextOverflow.ellipsis),)
+              locationData == null || isConnected == false
+                  ? Column(
+                      children: [
+                        Container(
+                            height: 35,
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Center(
+                                child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                150,
+                                        child: Text(
+                                          "warning".tr(),
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white,
+                                              overflow: TextOverflow.ellipsis),
+                                        )),
+                                    const SizedBox(
+                                      width: 15,
+                                    ),
+                                    const Icon(
+                                      Icons.warning,
+                                      color: Colors.yellow,
+                                    ),
+                                  ],
+                                ),
+                                TextButton(
+                                  onPressed: () => bottomSheet(context),
+                                  child: Text(
+                                    "buttonMore".tr(),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
-                                  const SizedBox(width: 15,),
-                                  const Icon(
-                                    Icons.warning, color: Colors.yellow,),
-                                ],
-                              ),
-                              TextButton(
-                                onPressed: () => bottomSheet(context),
-                                child: Text("buttonMore".tr(), style: const TextStyle(color: Colors.white),),
-                              )
-                            ],
-                          )
-                      )
-                  ),
-                  const SizedBox(height: 20,)
-                ],
-              ) :
-              const SizedBox.shrink(),
+                                )
+                              ],
+                            ))),
+                        const SizedBox(
+                          height: 20,
+                        )
+                      ],
+                    )
+                  : const SizedBox.shrink(),
               Expanded(
                 child: GridView(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       childAspectRatio: 3 / 3,
-                      crossAxisSpacing: 10
-                  ),
+                      crossAxisSpacing: 10),
                   children: [
                     buttons("assets/images/auto.png", const AvtoSpeedPage()),
                     buttons("assets/images/walk.png", const WalkingSpeedPage()),
@@ -131,8 +187,7 @@ class _HomePageState extends State<HomePage> {
               )
             ],
           ),
-        )
-    );
+        ));
   }
 
   void getMod() async {
@@ -147,24 +202,28 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: () {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => pageName,));
+            context,
+            MaterialPageRoute(
+              builder: (context) => pageName,
+            ));
       },
       child: Container(
         padding: const EdgeInsets.all(25),
         decoration: BoxDecoration(
             color: isDark ? Colors.white10 : Colors.white,
             borderRadius: BorderRadius.circular(10),
-            boxShadow: isDark ?
-            []
+            boxShadow: isDark
+                ? []
                 : [
-              BoxShadow(color: Colors.grey.withOpacity(.3),
-                  blurRadius: 2,
-                  offset: const Offset(-3, -3)),
-              BoxShadow(color: Colors.grey.withOpacity(.3),
-                  blurRadius: 2,
-                  offset: const Offset(1, 1))
-            ]
-        ),
+                    BoxShadow(
+                        color: Colors.grey.withOpacity(.3),
+                        blurRadius: 2,
+                        offset: const Offset(-3, -3)),
+                    BoxShadow(
+                        color: Colors.grey.withOpacity(.3),
+                        blurRadius: 2,
+                        offset: const Offset(1, 1))
+                  ]),
         child: Center(
           child: Image.asset(image),
         ),
@@ -173,23 +232,29 @@ class _HomePageState extends State<HomePage> {
   }
 
   void bottomSheet(context) {
-
     showModalBottomSheet(
       context: context,
       elevation: 5,
-      backgroundColor: isDark?Colors.grey.shade900:Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20))),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
-          child: Text("moreText".tr(),style: TextStyle(color: isDark?Colors.white:Colors.black,fontWeight: FontWeight.bold),),
+          child: Text(
+            "moreText".tr(),
+            style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold),
+          ),
         );
       },
     );
   }
 
   void basic() {
+    Location _location = Location();
     myService.getLocationUpdates().listen((event) {
       setState(() {
         locationData = event;
@@ -203,23 +268,25 @@ class _HomePageState extends State<HomePage> {
         currentLanguage = value!;
       });
     });
-    switch(currentLanguage) {
-      case "uzb": {
-        await context.setLocale(const Locale("uz","UZ"));
-      }
-      break;
+    switch (currentLanguage) {
+      case "uzb":
+        {
+          await context.setLocale(const Locale("uz", "UZ"));
+        }
+        break;
 
-      case "rus": {
-        await context.setLocale(const Locale("ru","RU"));
-      }
-      break;
+      case "rus":
+        {
+          await context.setLocale(const Locale("ru", "RU"));
+        }
+        break;
 
-      case "usa": {
-        await context.setLocale(const Locale("en","US"));
-      }
-      break;
+      case "usa":
+        {
+          await context.setLocale(const Locale("en", "US"));
+        }
+        break;
     }
-
   }
 
   Future<void> initLocation() async {
@@ -229,56 +296,56 @@ class _HomePageState extends State<HomePage> {
     if (!isLocationEnabled) {
       showDialog(
         context: context,
-        builder: (_) => true?
-        AlertDialog(
-              title:  Text('initLocationTitle'.tr()),
-              content:  Text('initLocation'.tr()),
-              actions: [
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ):
-        CupertinoAlertDialog(
-              title:  const Text('Location Service'),
-              content:  Text('initLocation'.tr()),
-              actions: [
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-        ),
+        builder: (_) => true
+            ? AlertDialog(
+                title: Text('initLocationTitle'.tr()),
+                content: Text('initLocation'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              )
+            : CupertinoAlertDialog(
+                title: const Text('Location Service'),
+                content: Text('initLocation'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
       );
     }
 
     await futurePermission;
 
-    if (!isConnected!){
+    if (!isConnected!) {
       showDialog(
         context: context,
-        builder: (_) =>true?
-        AlertDialog(
-          title: Text('checkConnectivityTitle'.tr()),
-          content: Text('checkConnectivity'.tr()),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ):
-        CupertinoAlertDialog(
-          title: const Text('Internet Connection'),
-          content: Text('checkConnectivity'.tr()),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
+        builder: (_) => true
+            ? AlertDialog(
+                title: Text('checkConnectivityTitle'.tr()),
+                content: Text('checkConnectivity'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              )
+            : CupertinoAlertDialog(
+                title: const Text('Internet Connection'),
+                content: Text('checkConnectivity'.tr()),
+                actions: [
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
       );
     }
   }
@@ -287,7 +354,7 @@ class _HomePageState extends State<HomePage> {
     final connectivityResult = await Connectivity().checkConnectivity();
     setState(() {
       isConnected =
-      connectivityResult != ConnectivityResult.none ? true : false;
+          connectivityResult != ConnectivityResult.none ? true : false;
     });
   }
 }

@@ -6,4 +6,7 @@ class LocationService {
   Stream<LocationData> getLocationUpdates() {
     return _location.onLocationChanged;
   }
+
+
+
 }
