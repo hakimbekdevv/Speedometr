@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:speedometr/pages/home_page.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:speedometr/pages/test.dart';
+
 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+    [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]
+  );
   await EasyLocalization.ensureInitialized();
   runApp(
     EasyLocalization(
